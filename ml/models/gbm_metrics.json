@@ -1,0 +1,8 @@
+{
+  "baseline_mae": 35.48,
+  "p50_mae": 26.37,
+  "p50_rmse": 44.11,
+  "p50_r2": 0.7655,
+  "p90_empirical_coverage": 0.87,
+  "mae_improvement_pct": 25.7
+}

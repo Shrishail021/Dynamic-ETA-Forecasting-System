@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>RailPulse — Dynamic ETA Forecasting System</title>
+    
+    <!-- Google Fonts: Space Grotesk, Inter, and Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Tailwind CSS with Light Blue Design Palette -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              /* === Light Surface Scale (white → soft grays) === */
+              "surface":                  "#f8fafc",
+              "surface-dim":              "#f0f4f8",
+              "surface-bright":           "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-low":    "#f4f7fb",
+              "surface-container":        "#edf2f8",
+              "surface-container-high":   "#e2eaf4",
+              "surface-container-highest":"#d6e4f0",
+
+              /* === Text (dark navy for crisp contrast) === */
+              "on-surface":         "#0f1e35",
+              "on-surface-variant": "#3d5269",
+              "inverse-surface":    "#0f1e35",
+              "inverse-on-surface": "#f8fafc",
+
+              /* === Borders & Outlines === */
+              "outline":         "#7a96b4",
+              "outline-variant": "#c6d8eb",
+
+              /* === Primary Blue Accent (Indian Railways blue) === */
+              "primary":             "#1559a8",
+              "primary-container":   "#2e7fdf",
+              "on-primary":          "#ffffff",
+              "on-primary-container":"#ffffff",
+              "primary-fixed":       "#ddeeff",
+              "primary-fixed-dim":   "#9ec5f7",
+
+              /* === Secondary Amber / Gold (delay indicator) === */
+              "secondary":             "#b95f00",
+              "secondary-container":   "#f5820a",
+              "on-secondary":          "#ffffff",
+              "secondary-fixed":       "#ffe5c2",
+
+              /* === Tertiary (red for danger/errors) === */
+              "tertiary":              "#c62828",
+              "tertiary-container":    "#ef5350",
+              "hazard-coral":          "#d32f2f",
+              "error":                 "#b71c1c",
+              "error-container":       "#ffcdd2",
+
+              /* === Dark Navy (for headers, cards, CTAs) === */
+              "navy":                  "#0d2747",
+              "navy-deep":             "#071629",
+              "navy-light":            "#1a3d6e",
+
+              /* === Background === */
+              "background":    "#f0f5fb",
+              "on-background": "#0f1e35"
+            },
+            fontFamily: {
+              sans:      ["Inter", "sans-serif"],
+              display:   ["Space Grotesk", "sans-serif"],
+              telemetry: ["Space Grotesk", "monospace"]
+            },
+            boxShadow: {
+              "blue-glow":  "0 0 16px rgba(21,89,168,0.2)",
+              "blue-ring":  "0 0 0 3px rgba(46,127,223,0.25)",
+              "card":       "0 2px 12px rgba(15,30,53,0.08)",
+              "card-hover": "0 6px 24px rgba(15,30,53,0.14)",
+            }
+          }
+        }
+      };
+    </script>
+  </head>
+  <body class="bg-surface font-sans text-on-surface flex flex-col min-h-screen selection:bg-primary-fixed selection:text-navy">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "dataset": "synthetic_training_dataset_FINAL_clean.csv",
+  "total_rows": 106892,
+  "train_rows": 85427,
+  "test_rows": 21465,
+  "evaluated_at": "2026-09-10T06:07:39.922051Z",
+  "models": {
+    "Naive Persistence Baseline": {
+      "mae": 35.48,
+      "rmse": 58.3,
+      "r2": 0.5902,
+      "method": "Scheduled persistence minus halt buffer"
+    },
+    "HistGBM Quantile P50 (Median)": {
+      "mae": 26.37,
+      "rmse": 44.11,
+      "r2": 0.7655,
+      "training_time_sec": 10.3,
+      "method": "Quantile Gradient Boosting (alpha=0.50)"
+    },
+    "HistGBM Quantile P90 (Upper Bound)": {
+      "empirical_coverage": 0.87,
+      "training_time_sec": 4.5,
+      "method": "Quantile Gradient Boosting (alpha=0.90)"
+    },
+    "HistGBM Mean (Squared Error)": {
+      "mae": 28.33,
+      "rmse": 42.12,
+      "r2": 0.7862,
+      "training_time_sec": 1.5,
+      "method": "Standard Gradient Boosting (L2 loss)"
+    }
+  }
+}

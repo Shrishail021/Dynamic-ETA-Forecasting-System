@@ -1,0 +1,18 @@
+{
+  "method": "naive_baseline (persistence + fixed halt recovery)",
+  "n_rows": 9086,
+  "overall_mae_min": 21.53,
+  "mae_by_train_type": {
+    "express": 23.53,
+    "passenger": 19.0,
+    "rajdhani_shatabdi_vb": 21.84,
+    "superfast": 22.69
+  },
+  "mae_by_route": {
+    "R1": 21.47,
+    "R2": 22.26,
+    "R3": 16.78,
+    "R4": 26.63,
+    "R5": 19.0
+  }
+}

@@ -1,0 +1,110 @@
+/*
+  RailPulse Design System - Light Blue Professional Theme
+  Clean white/light-gray surfaces · Deep navy text · Indian Railways blue accent
+*/
+
+:root {
+  --color-bg:       #f0f5fb;
+  --color-surface:  #f8fafc;
+  --color-navy:     #0d2747;
+  --color-blue:     #1559a8;
+  --color-blue-mid: #2e7fdf;
+  --color-warn:     #f5820a;
+  --color-danger:   #d32f2f;
+}
+
+body {
+  margin: 0;
+  background-color: #f0f5fb;
+  color: #0f1e35;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Card & Panel Utilities ── */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(198, 216, 235, 0.8);
+  box-shadow: 0 2px 12px rgba(15, 30, 53, 0.07);
+}
+
+.glass-panel-elevated {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(46, 127, 223, 0.3);
+  box-shadow: 0 4px 24px rgba(21, 89, 168, 0.12);
+}
+
+/* Solid white card (for important containers) */
+.card {
+  background: #ffffff;
+  border: 1px solid #e2eaf4;
+  box-shadow: 0 2px 12px rgba(15, 30, 53, 0.07);
+  border-radius: 0.75rem;
+}
+
+.card-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card-hover:hover {
+  box-shadow: 0 6px 24px rgba(15, 30, 53, 0.13);
+  transform: translateY(-1px);
+}
+
+/* ── Pulse / Radar animations ── */
+@keyframes radar-pulse {
+  0%   { transform: scale(0.95); opacity: 0.8; }
+  50%  { transform: scale(1.12); opacity: 0.3; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+.animate-radar { animation: radar-pulse 3s infinite ease-in-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn 0.3s ease forwards; }
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: #f0f5fb; }
+::-webkit-scrollbar-thumb  { background: #c6d8eb; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2e7fdf; }
+
+/* ── Leaflet map overrides for light mode ── */
+.leaflet-container {
+  border-radius: 0.75rem;
+  border: 1px solid #c6d8eb;
+}
+.leaflet-popup-content-wrapper {
+  background: #ffffff;
+  color: #0f1e35;
+  border: 1px solid #e2eaf4;
+  box-shadow: 0 4px 18px rgba(15,30,53,0.12);
+  border-radius: 0.6rem;
+}
+.leaflet-popup-tip { background: #ffffff; }
+
+/* ── Badge/status pill utilities ── */
+.status-on-time {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+.status-delayed {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffb74d;
+}
+.status-severe {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+}
