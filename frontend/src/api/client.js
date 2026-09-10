@@ -92,7 +92,9 @@ export const api = {
   // Telemetry & ML Model Metrics
   getTelemetryStats: (token) => request('/telemetry/stats', { token }),
   getModelMetrics: () => request('/telemetry/model-metrics'),
+  getDbOverview: () => request('/telemetry/db-overview'),
   downloadSqlExport: (token) => request('/telemetry/export.sql', { token, asBlob: true }),
+
 
   // Station Master & Autonomous Broadcast
   getStationMasterStations: () => request('/station-master/stations'),

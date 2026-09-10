@@ -14,6 +14,18 @@ def telemetry_statistics(current_user: dict = Depends(require_staff)):
     return get_telemetry_stats()
 
 
+@router.get("/db-overview")
+def database_overview():
+    """
+    Public endpoint providing transparency into the local SQLite database on the user's PC.
+    Returns the absolute path, file size, table counts, and most recent records from
+    predictions_log and journey_telemetry_log.
+    """
+    from app.services.telemetry_service import get_db_overview_and_recent
+    return get_db_overview_and_recent()
+
+
+
 @router.get("/export.sql")
 def export_sql_dump(current_user: dict = Depends(require_staff)):
     """

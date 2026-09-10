@@ -122,3 +122,80 @@ def export_telemetry_to_sql_file() -> str:
     content = "\n".join(lines)
     sql_file.write_text(content, encoding="utf-8")
     return str(sql_file)
+
+
+def get_db_overview_and_recent() -> Dict[str, Any]:
+    """
+    Returns full metadata regarding the physical SQLite file on the user's PC,
+    including file size, table counts, and recent records from predictions_log
+    and journey_telemetry_log so users can correlate with DB Browser for SQLite.
+    """
+    import os
+
+    db_path = str(settings.DATABASE_PATH.resolve())
+    size_bytes = os.path.getsize(db_path) if os.path.exists(db_path) else 0
+    size_formatted = f"{round(size_bytes / 1024, 1)} KB" if size_bytes < 1024 * 1024 else f"{round(size_bytes / (1024 * 1024), 2)} MB"
+
+    table_counts = {}
+    recent_predictions = []
+    recent_telemetry = []
+
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+
+        # Count tables
+        for table in ["predictions_log", "journey_telemetry_log", "trains", "stations", "schedule"]:
+            try:
+                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                table_counts[table] = cursor.fetchone()[0]
+            except Exception:
+                table_counts[table] = 0
+
+        # Recent predictions
+        try:
+            cursor.execute("""
+                SELECT id, train_no, station_seq, current_delay_min, to_station,
+                       p50_delay_min, p90_delay_min, method, created_at
+                FROM predictions_log
+                ORDER BY id DESC
+                LIMIT 8
+            """)
+            recent_predictions = [dict(r) for r in cursor.fetchall()]
+        except Exception:
+            recent_predictions = []
+
+        # Recent journey telemetry
+        try:
+            cursor.execute("""
+                SELECT id, train_no, journey_date, event_type, timestamp,
+                       station_code, current_speed_kmph, estimated_delay_so_far_min, created_at
+                FROM journey_telemetry_log
+                ORDER BY id DESC
+                LIMIT 8
+            """)
+            recent_telemetry = [dict(r) for r in cursor.fetchall()]
+        except Exception:
+            recent_telemetry = []
+
+    return {
+        "database_file_path": db_path,
+        "database_name": "railpulse.db",
+        "file_size_bytes": size_bytes,
+        "file_size_formatted": size_formatted,
+        "table_counts": table_counts,
+        "recent_predictions": recent_predictions,
+        "recent_telemetry": recent_telemetry,
+        "db_browser_instructions": {
+            "app_name": "DB Browser for SQLite",
+            "file_to_open": db_path,
+            "steps": [
+                "1. Open DB Browser for SQLite on your Windows PC",
+                f"2. Click 'Open Database' and browse to: {db_path}",
+                "3. Switch to the 'Browse Data' tab",
+                "4. Select 'predictions_log' or 'journey_telemetry_log' from the Table dropdown",
+                "5. View live persisted predictions, delays, GPS coordinates, and speed values in real time"
+            ],
+            "sample_query": "SELECT train_no, to_station, p50_delay_min, p90_delay_min, method, created_at FROM predictions_log ORDER BY id DESC LIMIT 20;"
+        }
+    }
+
