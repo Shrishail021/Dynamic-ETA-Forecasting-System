@@ -25,12 +25,20 @@ def list_trains(
         df = df[df["train_type"] == train_type]
     if search:
         s = str(search).strip().lower()
+        sched = data_store.schedule
+        matching_st_trains = []
+        if sched is not None and not sched.empty:
+            st_matches = sched[sched["station_code"].str.lower().str.contains(s, na=False)]["train_no"].unique().tolist()
+            matching_st_trains = [str(x) for x in st_matches]
+
         df = df[
-            df["train_no"].str.lower().str.contains(s) |
-            df["train_name"].str.lower().str.contains(s)
+            df["train_no"].str.lower().str.contains(s, na=False) |
+            df["train_name"].str.lower().str.contains(s, na=False) |
+            df["train_no"].isin(matching_st_trains)
         ]
 
     records = df.to_dict(orient="records")
+
     for r in records:
         r["days_of_week"] = [int(x) for x in str(r["days_of_week"]).split("|") if x.strip()]
     return records

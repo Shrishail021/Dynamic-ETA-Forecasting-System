@@ -4,7 +4,6 @@ import { api } from '../../api/client.js'
 import ETAConfidenceBadge from '../../components/trains/ETAConfidenceBadge.jsx'
 import TrainRouteMap from '../../components/map/TrainRouteMap.jsx'
 import DelayCauseAlert from '../../components/trains/DelayCauseAlert.jsx'
-import SqliteDbInspector from '../../components/database/SqliteDbInspector.jsx'
 import { formatClockTime, formatDelayHuman, formatDelayShort, formatHalt } from '../../utils/timeUtils.js'
 
 export default function TrainLiveEtaPage() {
@@ -16,6 +15,8 @@ export default function TrainLiveEtaPage() {
   const [liveEvents, setLiveEvents] = useState([])
   const [currentTime, setCurrentTime] = useState(new Date())
   const [secondsAgo, setSecondsAgo] = useState(2)
+  const [isPredicting, setIsPredicting] = useState(false)
+  const debounceTimerRef = useRef(null)
 
   useEffect(() => {
     const clockTimer = setInterval(() => {
@@ -24,6 +25,7 @@ export default function TrainLiveEtaPage() {
     }, 1000)
     return () => clearInterval(clockTimer)
   }, [])
+
 
   const [isLiveActive, setIsLiveActive] = useState(false)
   const [simSpeed, setSimSpeed] = useState(250)
@@ -117,14 +119,28 @@ export default function TrainLiveEtaPage() {
 
   const triggerEtaPrediction = (seq, delay, trainData = train) => {
     if (!trainNo) return
+    setIsPredicting(true)
     api.predictEta({
       train_no: trainNo,
       current_station_seq: Number(seq),
       current_delay_min: Number(delay),
     }).then((res) => {
       setEta(res)
-    }).catch((err) => console.error('Prediction failed:', err))
+    }).catch((err) => {
+      console.error('Prediction failed:', err)
+    }).finally(() => {
+      setIsPredicting(false)
+    })
   }
+
+  const handleDelayChange = (newDelay) => {
+    setCurrentDelay(newDelay)
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    debounceTimerRef.current = setTimeout(() => {
+      triggerEtaPrediction(currentSeq, newDelay)
+    }, 120)
+  }
+
 
   // Live simulation event stream
   const toggleLiveSimulation = () => {
@@ -844,12 +860,13 @@ export default function TrainLiveEtaPage() {
               <h3 className="font-display text-2xl sm:text-3xl font-bold text-navy mt-1.5">
                 {nextStationObj.station_name || nextStationCode} ({nextStationCode})
               </h3>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs font-display font-semibold text-slate-600">
-                  Approaching in:
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <span className="px-3 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 font-display font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                  <span className="material-symbols-outlined text-[16px] text-amber-700">dock</span>
+                  Arriving Platform: <strong className="text-navy">{nextStationObj.platform_no || 'Platform 1'}</strong>
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-800 font-display font-bold text-xs">
-                  ~{Math.max(1, Math.round((Math.max(0, (nextStationObj.distance_from_origin_km || 0) - (currentStation.distance_from_origin_km || 0)) / Math.max(activeTelemetry.speed || 65, 30)) * 60) + Math.round((delayP50 || 0) * 0.2))} mins away
+                <span className="px-2.5 py-1 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-800 font-display font-bold text-xs">
+                  Approaching in: ~{Math.max(1, Math.round((Math.max(0, (nextStationObj.distance_from_origin_km || 0) - (currentStation.distance_from_origin_km || 0)) / Math.max(activeTelemetry.speed || 65, 30)) * 60) + Math.round((delayP50 || 0) * 0.2))} mins away
                 </span>
                 <span className="text-xs text-slate-400">•</span>
                 <span className="text-xs font-medium text-slate-500">
@@ -918,14 +935,22 @@ export default function TrainLiveEtaPage() {
         {/* Manual Interactive Delay Injector */}
         <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary text-lg">tune</span>
-              <h3 className="font-display font-semibold text-sm uppercase tracking-wider text-on-surface">
-                Dynamic Delay Injector
-              </h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-lg">tune</span>
+                <h3 className="font-display font-semibold text-sm uppercase tracking-wider text-on-surface">
+                  Dynamic Delay Injector
+                </h3>
+              </div>
+              {isPredicting && (
+                <span className="flex items-center gap-1 text-[11px] font-display text-primary animate-pulse font-bold">
+                  <span className="material-symbols-outlined text-xs animate-spin">sync</span>
+                  ML Computing...
+                </span>
+              )}
             </div>
             <p className="text-xs text-on-surface-variant mt-1">
-              Test how the ML model re-forecasts downstream delays when unexpected congestion occurs.
+              Test how the ML Quantile Regressor re-forecasts delays, accounting for buffer recovery & cascade.
             </p>
           </div>
 
@@ -933,7 +958,7 @@ export default function TrainLiveEtaPage() {
             <div>
               <label className="flex items-center justify-between text-xs text-on-surface-variant mb-1">
                 <span>Checkpoint Station:</span>
-                <span className="font-display font-bold text-primary">Stop #{currentSeq}</span>
+                <span className="font-display font-bold text-primary">Stop #{currentSeq} ({currentStation.station_code || 'ORIGIN'})</span>
               </label>
               <input
                 type="range"
@@ -951,8 +976,8 @@ export default function TrainLiveEtaPage() {
 
             <div>
               <label className="flex items-center justify-between text-xs text-on-surface-variant mb-1">
-                <span>Observed Delay:</span>
-                <span className="font-display font-bold text-secondary">{currentDelay} min</span>
+                <span>Observed Incident Delay (Injected Input):</span>
+                <span className="font-display font-bold text-secondary">+{currentDelay} min</span>
               </label>
               <input
                 type="range"
@@ -960,23 +985,61 @@ export default function TrainLiveEtaPage() {
                 max="180"
                 step="5"
                 value={currentDelay}
-                onChange={(e) => {
-                  const del = Number(e.target.value)
-                  setCurrentDelay(del)
-                  triggerEtaPrediction(currentSeq, del)
-                }}
+                onChange={(e) => handleDelayChange(Number(e.target.value))}
                 className="w-full accent-secondary bg-surface-container-high h-1.5 rounded-lg cursor-pointer"
               />
+            </div>
+
+            {/* Live ML Prediction vs Input Comparison Diagnostic Box */}
+            <div className="bg-surface-container-high/60 border border-outline-variant/50 rounded-xl p-3 flex flex-col gap-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium">Injected Observed Delay:</span>
+                <span className="font-mono font-bold text-slate-800">+{currentDelay}m</span>
+              </div>
+              <div className="flex items-center justify-between border-t border-outline-variant/30 pt-1.5">
+                <span className="text-navy font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  ML Model Forecast (P50):
+                </span>
+                <span className="font-mono font-bold text-primary text-sm">
+                  +{nextEta?.p50_delay_min ?? currentDelay}m
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium">Schedule Buffer Effect:</span>
+                <span className={`font-display font-bold text-[11px] ${
+                  (currentDelay - (nextEta?.p50_delay_min ?? currentDelay)) > 0
+                    ? 'text-emerald-700'
+                    : (currentDelay - (nextEta?.p50_delay_min ?? currentDelay)) < 0
+                    ? 'text-amber-700'
+                    : 'text-slate-500'
+                }`}>
+                  {(currentDelay - (nextEta?.p50_delay_min ?? currentDelay)) > 0
+                    ? `-${(currentDelay - (nextEta?.p50_delay_min ?? currentDelay)).toFixed(1)}m recovered by ML`
+                    : (currentDelay - (nextEta?.p50_delay_min ?? currentDelay)) < 0
+                    ? `+${Math.abs(currentDelay - (nextEta?.p50_delay_min ?? currentDelay)).toFixed(1)}m delay cascade`
+                    : 'Direct propagation'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                <span>P90 Risk Ceiling:</span>
+                <span className="font-mono text-rose-600 font-bold">+{nextEta?.p90_delay_min ?? (currentDelay + 25)}m</span>
+              </div>
             </div>
           </div>
 
           <button
             onClick={() => triggerEtaPrediction(currentSeq, currentDelay)}
-            className="w-full py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-primary/30 text-primary font-display text-xs font-bold tracking-wide transition-colors"
+            disabled={isPredicting}
+            className="w-full py-2 rounded-xl bg-primary hover:bg-navy text-white font-display text-xs font-bold tracking-wide transition-colors shadow-sm flex items-center justify-center gap-1.5"
           >
-            Re-calculate Prediction Vector
+            <span className={`material-symbols-outlined text-sm ${isPredicting ? 'animate-spin' : ''}`}>
+              {isPredicting ? 'sync' : 'auto_graph'}
+            </span>
+            {isPredicting ? 'Computing Forecast Vector...' : 'Force ML Re-prediction'}
           </button>
         </div>
+
       </div>
 
       {/* Downstream Station Predictions Table */}
@@ -1017,6 +1080,7 @@ export default function TrainLiveEtaPage() {
               <thead>
                 <tr className="border-b border-outline-variant text-on-surface-variant text-[11px] font-display uppercase tracking-wider bg-surface-container-low">
                   <th className="py-3 px-3 rounded-tl-lg">Station</th>
+                  <th className="py-3 px-3">Platform</th>
                   <th className="py-3 px-3">Remaining Dist</th>
                   <th className="py-3 px-3">Live Countdown</th>
                   <th className="py-3 px-3">Scheduled Arrival</th>
@@ -1040,6 +1104,11 @@ export default function TrainLiveEtaPage() {
                       <td className="py-3 px-3 font-display font-bold text-navy">
                         {schedStop.station_name || stop.to_station}
                         <span className="ml-1.5 text-[11px] font-mono text-outline">({stop.to_station})</span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-display font-bold text-xs">
+                          {schedStop.platform_no || 'PF-1'}
+                        </span>
                       </td>
                       <td className="py-3 px-3 font-mono text-slate-700 font-semibold tabular-nums text-xs">
                         {distRemaining} km
@@ -1097,10 +1166,7 @@ export default function TrainLiveEtaPage() {
         )}
       </div>
 
-      {/* SQLite Local PC Storage & DB Browser Inspector */}
-      <SqliteDbInspector activeTrainNo={trainNo} />
-
-
     </div>
   )
 }
+

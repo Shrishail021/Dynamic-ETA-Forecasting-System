@@ -60,6 +60,8 @@ class ScheduleStop(BaseModel):
     scheduled_arrival_min: float
     scheduled_departure_min: float
     halt_min: float
+    platform_no: Optional[str] = "Platform 1"
+
 
 
 class TrainWithSchedule(Train):
