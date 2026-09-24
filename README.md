@@ -55,10 +55,8 @@ python3 train_gbm_model.py                            # retrains + re-saves the 
 ```
 railway-eta-system/
 ├── docs/                         ← read these first
-│   ├── PROJECT_BRIEF.md
-│   ├── ARCHITECTURE.md
-│   ├── MASTER_PROMPT_ANTIGRAVITY.md
-│   └── STITCH_UI_PROMPT.md
+│   ├── ARCHITECTURE.md  
+│  
 ├── data/railway_eta_dataset/      ← synthetic dataset + live simulator (already generated)
 ├── ml/                            ← training scripts + trained model
 ├── backend/                       ← FastAPI app (runs today)
