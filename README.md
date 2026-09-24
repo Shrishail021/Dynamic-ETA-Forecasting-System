@@ -15,10 +15,6 @@ exact current state.
    reality in India, and the honest feasibility assessment.
 2. Read `docs/ARCHITECTURE.md` — how the pieces fit together and what's
    already working.
-3. Generate your UI screens using `docs/STITCH_UI_PROMPT.md` in Stitch.
-4. Paste `docs/MASTER_PROMPT_ANTIGRAVITY.md` into Antigravity to complete
-   the build (persistence, real auth, wiring in the Stitch screens, live
-   re-forecasting, and the remaining TODOs).
 
 ## Run it locally right now (before Antigravity touches anything)
 
