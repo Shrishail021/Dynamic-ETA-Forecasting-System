@@ -29,3 +29,17 @@ yarn-error.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Builder / Development artifacts (kept locally, excluded from GitHub)
+MASTER_PROMPT_ANTIGRAVITY.md
+STITCH_UI_PROMPT.md
+docs/MASTER_PROMPT_ANTIGRAVITY.md
+docs/STITCH_UI_PROMPT.md
+docs/PROJECT_BRIEF.md
+APP_DASHBOARDS_AND_LAUNCH.md
+backend/app/db/seed_all_103_trains.py
+ml/inspect_dataset.py
+ml/retrain_with_new_data.py
+ml/train_all_models.py
+ml/train_final_dataset.py
+frontend/src/components/database/SqliteDbInspector.jsx
